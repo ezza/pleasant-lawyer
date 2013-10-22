@@ -1,10 +1,17 @@
 {
   "name": "Beetil pleasant lawyer search",
-  "description" : "To use, type bl and a beetil number or pleasant lawyer phrase",
-  "version": "0.2",
+  "description" : "Go to beetil number or phrase from the omnibox",
+  "version": "0.2.1",
   "background": {
     "scripts": ["background.js"]
   },
-  "omnibox": { "keyword" : "bl" },
-  "manifest_version": 2
+  "omnibox": { "keyword" : "b" },
+  "manifest_version": 2,
+  "content_scripts": [
+    {
+      "matches": ["https://desk.gotoassist.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
 }

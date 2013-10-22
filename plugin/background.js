@@ -1,19 +1,29 @@
-function navigate(url) {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    chrome.tabs.update(tabs[0].id, {url: url});
-  });
-}
+// Configure search URL to hit
+var search_url = "https://desk.gotoassist.com/goto?q="
+
+// This event is fired when the content js asks us to find the phrase for a number
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.number) {
+    sendResponse(pleasantLawyer.numberToWords(request.number));
+  }
+});
 
 // This event is fired each time the user updates the text in the omnibox,
 // as long as the extension's keyword mode is still active.
 chrome.omnibox.onInputChanged.addListener(
   function(text, suggest) {
-    console.log('inputChanged: ' + text);    
     var result = pleasantLawyer.processTextInput(text);
     if (result) {
+      if (isNaN(result)) {
+        var suggestion_text = "Beetil phrase: ";
+        var suggestion_query = text;
+      }
+      else {
+        var suggestion_text = "B#";
+        var suggestion_query = result;
+      }
       suggest([
-        {content: text + " one", description: "the first one: " + result},
-        {content: text + " number two", description: "the second entry"}
+        {content: search_url + suggestion_query, description: suggestion_text + result}
       ]);
     }
   });
@@ -25,9 +35,17 @@ chrome.omnibox.onInputEntered.addListener(
       text = pleasantLawyer.processTextInput(text);
     }
     if (!isNaN(text)) {
-      navigate("https://desk.gotoassist.com/goto?q=" + text);
+      navigate(search_url + text);
     }
   });
+
+
+// Helper function to navigate to a URL
+function navigate(url) {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.update(tabs[0].id, {url: url});
+  });
+}
 
 var PleasantLawyer = function() {
   var adjectives=["pleasant","deserted","billowy","soft","ill","little","typical","jumpy","anxious","cruel","spooky","rustic","diligent","drunk","short","festive","fine","addicted","charming","ultra","lewd","jazzy","hesitant","numerous","filthy","oceanic","robust","juicy","grubby","huge","lazy","new","careful","pumped","elderly","whole","aromatic","dark","kind","demonic","ritzy","fat","early","envious","broad","minor","capable","crowded","spicy","far","open","dapper","afraid","shiny","thick","lavish","hard","immense","tired","ripe","quick","abusive","eminent","witty","guarded","late","gaping","gifted","groovy","annoyed","mature","happy","calm","scary","wiry","resonant","fancy","internal","absurd","lucky","natural","large","brief","sincere","yummy","giddy","testy","marked","tiny","hanging","pathetic","cowardly","wry","old","aspiring","deep","narrow","odd","silly","true","half","decorous","aboard","ratty","parched","friendly","windy","smoggy","sharp","zippy","grieving","doubtful","thankful","languid","breezy","nifty","many","creepy","succinct","proud","quack","joyous","innate","dead","rare","wild","legal","bad","erect","tart","watery","fearless","rapid","panicky","free","great","brave","majestic","crazy","troubled","meek","heavy","low","various","boorish","smiling","drab","ashamed","faded","wary","cool","needy","acrid","toasty","tidy","jealous","loud","tan","frail","common","regular","obscene","wrong","fabulous","prickly","aware","foolish","gray","royal","lean","powerful","salty","tall","good","jaded","habitual","organic","irate","wide","smelly","wanting","seemly","near","teeny","oafish","boiling","madly","trite","nosy","pretty","homely","peaceful","towering","fuzzy","second","labored","round","possible","zany","loose","sour","wee","blue","real","small","tough","clumsy","orange","swift","tearful","offbeat","poor","burly","educated","sad","aquatic","curly","fluffy","wretched","stupid","weak","rabid","young","aloof","guttural","roomy","adorable","juvenile","trashy","sweet","taboo","bloody","furtive","puzzled","close","equal","romantic","optimal","zealous","hurt","somber","noisy","scrawny","wrathful","foamy","woozy","distinct","poised","swanky","flowery","mute","cultured","stormy","glossy","unbiased","funny","dull","nutty","devilish","alike","womanly","utopian","better","murky","hungry","uptight","plucky","hissing","full","shrill","detailed","gullible","soggy","bawdy","berserk","itchy","hulking","moaning","ruthless","purple","elite","lying","deranged","alert","uppity","flippant","mundane","arrogant","stiff","rural","misty","cautious","glib","clean","empty","fertile","cuddly","level","bashful","puny","elegant","splendid","idiotic","roasted","square","faulty","super","dashing","adamant","big","erratic","lethal","gaudy","easy","gleaming","imported","black","slow","steep","fast","classy","gentle","mere","elated","petite","sulky","gigantic","flat","nervous","evil","like","severe","high","hellish","stale","average","wise","fierce","damp","perfect","assorted","vulgar","naughty","muddy","puffy","massive","slimy","abrupt","defiant","famous","light","nasty","gamy","serious","melted","terrible","tawdry","mighty","violent","past","wet","daily","giant","upbeat","separate","ruddy","versed","cagey","animated","sleepy","exultant","fair","abnormal","debonair","raspy","sudden","gainful","evasive","plain","sassy","eager","mammoth","angry","bored","tense","tasty","relieved","awful","known","subdued","right","able","selfish","nice","tight","telling","vengeful","vast","hot","wasteful","unusual","abject","gorgeous","overt","loving","ancient","vigorous","icy","noxious","jagged","medical","rampant","exotic","confused","horrible","ossified","rich","naive","same","yellow","magenta","tame","cold","painful","nebulous","snotty","acoustic","chunky","yielding","oval","red","rainy","wicked","lacking","sedate","macho","ignorant","ordinary","lopsided","normal","hollow","wakeful","coherent","ragged","economic","rotten","long","bizarre","jolly","waiting","busy","dizzy","acid","nonstop","sore","cynical","vague","onerous","waggish","dynamic","dusty","racial","physical","tacky","hypnotic","excited","ethereal","shy","gusty","worried","lyrical","polite","sneaky","fixed","icky","husky","godly","bitter","utter","wacky","strong","uneven","skinny","bumpy","accurate","alleged","chief","solid","amuck","spurious","dirty","lush","ahead","ugly","mushy","unable","volatile","modern","jobless","dry","few","dazzling","used","first","binary","cheap","adhesive","upset","zonked","lively","jittery","phobic"],

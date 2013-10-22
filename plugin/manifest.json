@@ -1,0 +1,10 @@
+{
+  "name": "Beetil pleasant lawyer search",
+  "description" : "To use, type bl and a beetil number or pleasant lawyer phrase",
+  "version": "0.2",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "omnibox": { "keyword" : "bl" },
+  "manifest_version": 2
+}

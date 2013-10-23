@@ -1,6 +1,10 @@
 // Configure search URL to hit
 var search_url = "https://desk.gotoassist.com/goto?q="
 
+var isBeetilNumber = function(text) {
+  return ("" + text).match(/^[1-9]\d*$/);
+};
+
 // This event is fired when the content js asks us to find the phrase for a number
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.number) {
@@ -10,34 +14,30 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 // This event is fired each time the user updates the text in the omnibox,
 // as long as the extension's keyword mode is still active.
-chrome.omnibox.onInputChanged.addListener(
-  function(text, suggest) {
-    var result = pleasantLawyer.processTextInput(text);
-    if (result) {
-      if (isNaN(result)) {
-        var suggestion_text = "Beetil phrase: ";
-        var suggestion_query = text;
-      }
-      else {
-        var suggestion_text = "B#";
-        var suggestion_query = result;
-      }
-      suggest([
-        {content: search_url + suggestion_query, description: suggestion_text + result}
-      ]);
-    }
-  });
+chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
+  var beetilNumber = isBeetilNumber(text) ? text : pleasantLawyer.stringToNumber(text),
+      beetilPhrase = pleasantLawyer.numberToWords(+beetilNumber),
+      description;
+
+  if (beetilNumber && beetilPhrase) {
+    description = '<match>Go to B#' + beetilNumber + ' "' + beetilPhrase + '"</match>';
+  }
+  else {
+    description = "No results found";
+  }
+
+  chrome.omnibox.setDefaultSuggestion({description: description});
+});
 
 // This event is fired with the user accepts the input in the omnibox.
-chrome.omnibox.onInputEntered.addListener(
-  function(text) {
-    if (isNaN(text)) {
-      text = pleasantLawyer.processTextInput(text);
-    }
-    if (!isNaN(text)) {
-      navigate(search_url + text);
-    }
-  });
+chrome.omnibox.onInputEntered.addListener(function(text) {
+  if (!isBeetilNumber(text)) {
+    text = pleasantLawyer.processTextInput(text);
+  }
+  if (isBeetilNumber(text)) {
+    navigate(search_url + text);
+  }
+});
 
 
 // Helper function to navigate to a URL
@@ -60,28 +60,36 @@ var PleasantLawyer = function() {
   }
   
   this.processTextInput = function(text){
-    if (isNaN(text))
-    {
-        words = text.split(' ');
-        return this.wordsToNumber(words[0], words[1]);
-    } else {
-        return this.numberToWords(+text)
+    if (isBeetilNumber(text)) {
+      return this.numberToWords(+text)
     }
-  }
+    else {
+      return this.stringToNumber(text);
+    }
+  };
+
+  this.stringToNumber = function(text) {
+    var words = text.split(' ');
+    if (words.length === 1 && words[0].length === 6) {
+      words = [words[0].substring(0, 3), words[0].substring(3)];
+    }
+    return words.length === 2 ? this.wordsToNumber(words[0], words[1]) : null;
+  };
+
   this.numberToWords = function(n){
     var div = Math.floor((n - 1) / wordListSize);
     var adj = (n - 1) % wordListSize;
     var noun = (adj + div) % wordListSize;
     return adjectives[adj] + ' ' + nouns[noun];
-  }
+  };
 
   this.wordsToNumber = function(adj, noun){
     if (!adj || !noun) { return; }
     var adj_index = adjectiveMap[adj.substring(0, 3)];
     var noun_index = nounMap[noun.substring(0, 3)];
     var mod = ((noun_index - adj_index) + wordListSize) % wordListSize;
-    return (mod * wordListSize + adj_index + 1);
-  }
-}
+    return mod * wordListSize + adj_index + 1;
+  };
+};
 
 var pleasantLawyer = new PleasantLawyer();

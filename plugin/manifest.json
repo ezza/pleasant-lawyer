@@ -1,12 +1,13 @@
 {
+  "manifest_version": 2,
   "name": "Beetil pleasant lawyer search",
   "description" : "Go to beetil number or phrase from the omnibox",
-  "version": "0.2.1",
+  "version": "0.3.1",
   "background": {
     "scripts": ["background.js"]
   },
   "omnibox": { "keyword" : "b" },
-  "manifest_version": 2,
+  "update_url": "http://seriousorange.com/pleasant-lawyer/updates.xml",
   "content_scripts": [
     {
       "matches": ["https://desk.gotoassist.com/*"],

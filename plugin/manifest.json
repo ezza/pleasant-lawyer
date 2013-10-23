@@ -1,13 +1,17 @@
 {
   "manifest_version": 2,
-  "name": "Beetil pleasant lawyer search",
-  "description" : "Go to beetil number or phrase from the omnibox",
-  "version": "0.3.1",
+  "name": "Service Desk Pleasant Lawyer",
+  "description": "Quickly go to a Service Desk record by number or two-word phrase from the omnibox",
+  "version": "0.3.3",
   "background": {
     "scripts": ["background.js"]
   },
-  "omnibox": { "keyword" : "b" },
-  "update_url": "http://seriousorange.com/pleasant-lawyer/updates.xml",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "omnibox": {"keyword": "b"},
   "content_scripts": [
     {
       "matches": ["https://desk.gotoassist.com/*"],

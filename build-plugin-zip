@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -f plugin.zip
+zip -r plugin.zip plugin/*.{json,js,png}

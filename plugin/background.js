@@ -5,11 +5,61 @@ var isBeetilNumber = function(text) {
   return ("" + text).match(/^[1-9]\d*$/);
 };
 
+var mruList = new function() {
+  var size = 20;
+
+  this.add = function(number) {
+    chrome.storage.sync.get("mruList", function(items) {
+      var list = items.mruList || [],
+          index = list.indexOf(number);
+
+      if (index > -1) { list.splice(index, 1); }
+      list.unshift(number);
+      list.splice(size);
+
+      chrome.storage.sync.set({mruList: list});
+    });
+  };
+
+  this.get = function(callback) {
+    chrome.storage.sync.get("mruList", function(items) {
+      var list = (items.mruList || []).map(function(number) {
+        return {number: number, phrase: pleasantLawyer.numberToWords(number)};
+      });
+      callback(list);
+    });
+  };
+};
+
 // This event is fired when the content js asks us to find the phrase for a number
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.number) {
     sendResponse(pleasantLawyer.numberToWords(request.number));
   }
+});
+
+var Delayed = function() {
+  var callbacks = [], data;
+
+  return {
+    set: function() {
+      data = arguments;
+      callbacks.forEach(function(callback) { callback.apply(null, data); });
+      callbacks = [];
+    },
+
+    get: function(callback) {
+      data === void 0 ? callbacks.push(callback) : callback.apply(null, data);
+      return this;
+    }
+  };
+};
+
+var mruData;
+
+chrome.omnibox.onInputStarted.addListener(function() {
+  mruData = Delayed();
+  mruList.get(mruData.set);
 });
 
 // This event is fired each time the user updates the text in the omnibox,
@@ -27,25 +77,49 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
   }
 
   chrome.omnibox.setDefaultSuggestion({description: description});
+
+  mruData.get(function(list) {
+    var results = list.filter(function(data) {
+      return (data.number + data.phrase).indexOf(text) > -1;
+    }).map(function(data) {
+      var result = "B#" + data.number + ' "' + data.phrase + '"';
+      result = result.split(text).join("<match>" + text + "</match>");
+      return {
+        content: data.number,
+        description: result + ' <dim>- Service Desk Pleasant Lawyer</dim>'
+      };
+    });
+
+    suggest(results);
+  });
 });
 
 // This event is fired with the user accepts the input in the omnibox.
-chrome.omnibox.onInputEntered.addListener(function(text) {
+chrome.omnibox.onInputEntered.addListener(function(text, disposition) {
   if (!isBeetilNumber(text)) {
     text = pleasantLawyer.processTextInput(text);
   }
+
   if (isBeetilNumber(text)) {
-    navigate(search_url + text);
+    mruList.add(text);
+
+    var url = search_url + text;
+
+    switch (disposition) {
+      case "newForegroundTab":
+        chrome.tabs.create({url: url});
+        break;
+      case "newBackgroundTab":
+        chrome.tabs.create({url: url, active: false});
+        break;
+      default: // "currentTab"
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+          chrome.tabs.update(tabs[0].id, {url: url});
+        });
+        break;
+    }
   }
 });
-
-
-// Helper function to navigate to a URL
-function navigate(url) {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    chrome.tabs.update(tabs[0].id, {url: url});
-  });
-}
 
 var PleasantLawyer = function() {
   var adjectives=["pleasant","deserted","billowy","soft","ill","little","typical","jumpy","anxious","cruel","spooky","rustic","diligent","drunk","short","festive","fine","addicted","charming","ultra","lewd","jazzy","hesitant","numerous","filthy","oceanic","robust","juicy","grubby","huge","lazy","new","careful","pumped","elderly","whole","aromatic","dark","kind","demonic","ritzy","fat","early","envious","broad","minor","capable","crowded","spicy","far","open","dapper","afraid","shiny","thick","lavish","hard","immense","tired","ripe","quick","abusive","eminent","witty","guarded","late","gaping","gifted","groovy","annoyed","mature","happy","calm","scary","wiry","resonant","fancy","internal","absurd","lucky","natural","large","brief","sincere","yummy","giddy","testy","marked","tiny","hanging","pathetic","cowardly","wry","old","aspiring","deep","narrow","odd","silly","true","half","decorous","aboard","ratty","parched","friendly","windy","smoggy","sharp","zippy","grieving","doubtful","thankful","languid","breezy","nifty","many","creepy","succinct","proud","quack","joyous","innate","dead","rare","wild","legal","bad","erect","tart","watery","fearless","rapid","panicky","free","great","brave","majestic","crazy","troubled","meek","heavy","low","various","boorish","smiling","drab","ashamed","faded","wary","cool","needy","acrid","toasty","tidy","jealous","loud","tan","frail","common","regular","obscene","wrong","fabulous","prickly","aware","foolish","gray","royal","lean","powerful","salty","tall","good","jaded","habitual","organic","irate","wide","smelly","wanting","seemly","near","teeny","oafish","boiling","madly","trite","nosy","pretty","homely","peaceful","towering","fuzzy","second","labored","round","possible","zany","loose","sour","wee","blue","real","small","tough","clumsy","orange","swift","tearful","offbeat","poor","burly","educated","sad","aquatic","curly","fluffy","wretched","stupid","weak","rabid","young","aloof","guttural","roomy","adorable","juvenile","trashy","sweet","taboo","bloody","furtive","puzzled","close","equal","romantic","optimal","zealous","hurt","somber","noisy","scrawny","wrathful","foamy","woozy","distinct","poised","swanky","flowery","mute","cultured","stormy","glossy","unbiased","funny","dull","nutty","devilish","alike","womanly","utopian","better","murky","hungry","uptight","plucky","hissing","full","shrill","detailed","gullible","soggy","bawdy","berserk","itchy","hulking","moaning","ruthless","purple","elite","lying","deranged","alert","uppity","flippant","mundane","arrogant","stiff","rural","misty","cautious","glib","clean","empty","fertile","cuddly","level","bashful","puny","elegant","splendid","idiotic","roasted","square","faulty","super","dashing","adamant","big","erratic","lethal","gaudy","easy","gleaming","imported","black","slow","steep","fast","classy","gentle","mere","elated","petite","sulky","gigantic","flat","nervous","evil","like","severe","high","hellish","stale","average","wise","fierce","damp","perfect","assorted","vulgar","naughty","muddy","puffy","massive","slimy","abrupt","defiant","famous","light","nasty","gamy","serious","melted","terrible","tawdry","mighty","violent","past","wet","daily","giant","upbeat","separate","ruddy","versed","cagey","animated","sleepy","exultant","fair","abnormal","debonair","raspy","sudden","gainful","evasive","plain","sassy","eager","mammoth","angry","bored","tense","tasty","relieved","awful","known","subdued","right","able","selfish","nice","tight","telling","vengeful","vast","hot","wasteful","unusual","abject","gorgeous","overt","loving","ancient","vigorous","icy","noxious","jagged","medical","rampant","exotic","confused","horrible","ossified","rich","naive","same","yellow","magenta","tame","cold","painful","nebulous","snotty","acoustic","chunky","yielding","oval","red","rainy","wicked","lacking","sedate","macho","ignorant","ordinary","lopsided","normal","hollow","wakeful","coherent","ragged","economic","rotten","long","bizarre","jolly","waiting","busy","dizzy","acid","nonstop","sore","cynical","vague","onerous","waggish","dynamic","dusty","racial","physical","tacky","hypnotic","excited","ethereal","shy","gusty","worried","lyrical","polite","sneaky","fixed","icky","husky","godly","bitter","utter","wacky","strong","uneven","skinny","bumpy","accurate","alleged","chief","solid","amuck","spurious","dirty","lush","ahead","ugly","mushy","unable","volatile","modern","jobless","dry","few","dazzling","used","first","binary","cheap","adhesive","upset","zonked","lively","jittery","phobic"],

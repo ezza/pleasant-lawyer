@@ -5,9 +5,20 @@ Pleasant lawyer takes your boring task numbers and turns them into easy to remem
 
 ## Ruby usage
 
-Include the methods from numb.rb in your app. You can use these to convert your numbers to words and back again.
+Add the gem to your gem file. Call it using any of these formats
+
+===
+PleasantLawyer.convert 'wacky juice'
+PleasantLawyer.convert 'wac jui'
+PleasantLawyer.convert '36320'
+PleasantLawyer.convert 36320
+===
 
 ## Chrome Plugin Usage
+
+For Go To Assist users, simply install the pleasant lawyer plugin: https://chrome.google.com/webstore/detail/service-desk-pleasant-law/cbakkidlcnemoecaghbmnnkpacpfgfjh
+
+For use with other services
 
 Update background.js for the search URL you want to hit.
 

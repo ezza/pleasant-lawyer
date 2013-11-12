@@ -7,10 +7,10 @@ Pleasant lawyer takes your boring task numbers and turns them into easy to remem
 
 Add the gem to your gem file. Call it using any of these formats
 
-  PleasantLawyer.convert 'wacky juice'
-  PleasantLawyer.convert 'wac jui'
-  PleasantLawyer.convert '36320'
-  PleasantLawyer.convert 36320
+    PleasantLawyer.convert 'wacky juice'
+    PleasantLawyer.convert 'wac jui'
+    PleasantLawyer.convert '36320'
+    PleasantLawyer.convert 36320
 
 ## Chrome Plugin Usage
 

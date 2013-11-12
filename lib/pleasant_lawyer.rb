@@ -1,7 +1,7 @@
 class PleasantLawyer
 
-  ADJECTIVES = File.read('adjectives.txt').split("\n")
-  NOUNS = File.read('nouns.txt').split("\n")
+  ADJECTIVES = File.read(File.expand_path('../../adjectives.txt', __FILE__)).split("\n")
+  NOUNS = File.read(File.expand_path('../../nouns.txt', __FILE__)).split("\n")
   WORD_LIST_SIZE = NOUNS.length
 
   def self.convert(text)

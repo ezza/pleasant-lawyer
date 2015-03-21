@@ -143,7 +143,7 @@ var PleasantLawyer = function() {
   };
 
   this.stringToNumber = function(text) {
-    var words = text.split(' ');
+    var words = text.toLowerCase().split(' ');
     if (words.length === 1 && words[0].length === 6) {
       words = [words[0].substring(0, 3), words[0].substring(3)];
     }

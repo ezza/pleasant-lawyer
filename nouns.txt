@@ -409,7 +409,7 @@ tiger
 vase
 cactus
 jail
-slave
+slate
 copy
 hot
 ink

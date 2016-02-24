@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Service Desk Pleasant Lawyer",
   "description": "Quickly go to a Service Desk record by number or two-word phrase from the omnibox",
-  "version": "0.4.1",
+  "version": "0.6.0",
   "background": {
     "scripts": ["background.js"]
   },

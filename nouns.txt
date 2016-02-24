@@ -411,7 +411,7 @@ cactus
 jail
 slate
 copy
-hot
+hotel
 ink
 wash
 pickle

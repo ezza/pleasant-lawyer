@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "pleasant-lawyer"
-  spec.version       = "0.5.0"
+  spec.version       = "0.6.0"
   spec.authors       = ["Erin Francis", "Roger Nesbitt"]
   spec.email         = ["ezzzaf@gmail.com", "mogest@moge.st"]
   spec.summary       = "Turn a boring task id into a fun phrase"

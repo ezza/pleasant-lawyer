@@ -329,7 +329,7 @@ run
 pull
 cellar
 blade
-slope
+sloth
 answer
 toad
 metal
